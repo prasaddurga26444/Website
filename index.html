@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShopSphere | Local Checkout Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18241f;
+      --muted: #62716a;
+      --paper: #f5f3ec;
+      --surface: #fffefa;
+      --line: #dedfd5;
+      --green: #28624c;
+      --green-dark: #1b4636;
+      --lime: #d7e27a;
+      --coral: #bd513d;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); }
+    button, input { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .topline { height: 7px; background: var(--green); }
+    header { background: var(--surface); border-bottom: 1px solid var(--line); }
+    .header-inner, main, footer { width: min(1080px, calc(100% - 40px)); margin: auto; }
+    .header-inner { min-height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { color: var(--green-dark); font-family: Georgia, serif; font-size: 27px; text-decoration: none; letter-spacing: 0; }
+    .brand span { color: var(--coral); }
+    .cart-link { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font-weight: 700; }
+    .badge { min-width: 27px; height: 27px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--lime); font-size: 13px; }
+    main { min-height: calc(100vh - 155px); padding: 35px 0 64px; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; margin-bottom: 29px; }
+    .eyebrow { margin: 0 0 9px; color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 650px; margin-bottom: 8px; font-family: Georgia, serif; font-size: clamp(31px, 5vw, 49px); font-weight: 500; line-height: 1.06; letter-spacing: 0; }
+    .lead { max-width: 580px; margin-bottom: 0; color: var(--muted); line-height: 1.55; }
+    .search { display: flex; width: min(350px, 100%); border: 1px solid #c7cec2; background: var(--surface); }
+    .search input { min-width: 0; flex: 1; padding: 12px; border: 0; outline-color: var(--green); background: transparent; }
+    .button { min-height: 43px; padding: 10px 16px; border: 0; background: var(--green); color: white; font-weight: 700; cursor: pointer; }
+    .button:hover { background: var(--green-dark); }
+    .button.secondary { color: var(--green-dark); background: #e7ece2; }
+    .button.danger { color: white; background: var(--coral); }
+    .button:disabled { cursor: not-allowed; opacity: .55; }
+    .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .product-card { overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+    .product-art { min-height: 145px; display: grid; place-items: center; background: var(--art-bg, #dfe8d6); }
+    .product-art span { display: grid; width: 82px; height: 82px; place-items: center; border: 1px solid #243e32; border-radius: 50% 50% 42% 42%; color: var(--green-dark); font-family: Georgia, serif; font-size: 16px; transform: rotate(-7deg); }
+    .product-copy { padding: 17px; }
+    .product-copy h2 { margin-bottom: 7px; font-family: Georgia, serif; font-size: 21px; font-weight: 500; }
+    .product-copy p { min-height: 40px; margin-bottom: 15px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .product-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .price { font-size: 18px; font-weight: 800; }
+    .text-link { color: var(--green); font-weight: 700; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .crumb { margin: 0 0 22px; color: var(--muted); }
+    .product-detail, .checkout-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: start; }
+    .detail-art { min-height: 330px; display: grid; place-items: center; background: #dfe8d6; }
+    .detail-art span { display: grid; width: 160px; height: 190px; place-items: center; border: 2px solid var(--green-dark); border-radius: 48% 48% 10% 10%; color: var(--green-dark); font-family: Georgia, serif; font-size: 21px; transform: rotate(-4deg); }
+    .detail-copy { padding-top: 14px; }
+    .detail-copy h1 { font-size: 39px; }
+    .quantity-control { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .quantity-control input { width: 76px; padding: 10px; border: 1px solid #c7cec2; }
+    .cart-table { width: 100%; border-collapse: collapse; background: var(--surface); }
+    .cart-table th, .cart-table td { padding: 14px; border-bottom: 1px solid var(--line); text-align: left; }
+    .cart-table th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+    .cart-table input { width: 70px; padding: 8px; border: 1px solid #c7cec2; }
+    .cart-footer { display: grid; grid-template-columns: 1fr minmax(240px, 330px); gap: 24px; margin-top: 21px; }
+    .coupon { display: flex; align-items: start; gap: 8px; }
+    .coupon input, .field input { width: 100%; min-height: 43px; padding: 10px; border: 1px solid #c7cec2; background: var(--surface); }
+    .totals { padding: 17px; background: var(--surface); border: 1px solid var(--line); }
+    .total-row { display: flex; justify-content: space-between; margin-bottom: 13px; }
+    .total-row.final { padding-top: 13px; border-top: 1px solid var(--line); font-size: 20px; font-weight: 800; }
+    .totals .button { width: 100%; }
+    .notice { min-height: 22px; margin-top: 9px; color: var(--coral); font-size: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; margin-bottom: 6px; font-weight: 700; }
+    .field-error { min-height: 18px; margin: 4px 0 0; color: var(--coral); font-size: 13px; }
+    .checkout-summary { padding: 18px; background: #e7ece2; }
+    .empty, .confirmation { padding: 35px; background: var(--surface); border: 1px solid var(--line); }
+    .confirmation { border-top: 5px solid var(--green); }
+    .confirmation h1 { font-size: 38px; }
+    footer { padding: 16px 0 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    @media (max-width: 720px) {
+      .header-inner, main, footer { width: min(100% - 28px, 560px); }
+      .intro { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: 1fr; }
+      .product-detail, .checkout-layout, .cart-footer { grid-template-columns: 1fr; }
+      .cart-table th, .cart-table td { padding: 9px 6px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topline"></div>
+  <header>
+    <div class="header-inner">
+      <a class="brand" href="./" data-testid="home-link">Shop<span>Sphere</span> <small style="font: 11px 'Trebuchet MS', sans-serif; color: #62716a">LOCAL DEMO</small></a>
+      <a class="cart-link" href="?page=cart" data-testid="cart-link">Cart <span class="badge" data-testid="cart-badge">0</span></a>
+    </div>
+  </header>
+  <main>
+    <section class="view" data-view="shop" data-testid="search-page">
+      <div class="intro">
+        <div><p class="eyebrow">Useful things, thoughtfully chosen</p><h1>Small goods for everyday rituals.</h1><p class="lead">This local storefront is a synthetic practice target. Products, prices, and checkout are simulated for automation learning.</p></div>
+        <form class="search" data-testid="search-form"><input aria-label="Search products" data-testid="search-input" placeholder="Search the catalog"><button class="button" type="submit" data-testid="search-submit">Search</button></form>
+      </div>
+      <p class="eyebrow" data-testid="results-label">THE CATALOG</p>
+      <div class="product-grid" data-testid="product-results"></div>
+      <p class="notice" data-testid="no-results" hidden>No products match that search.</p>
+    </section>
+    <section class="view" data-view="product" data-testid="product-page">
+      <p class="crumb"><a class="text-link" href="./">Shop</a> / Product details</p>
+      <div class="product-detail"><div class="detail-art"><span data-testid="detail-art-label">Goods</span></div><div class="detail-copy"><p class="eyebrow">Product details</p><h1 data-testid="product-title"></h1><p class="lead" data-testid="product-description"></p><p class="price" data-testid="product-price"></p><div class="quantity-control"><label for="detail-quantity">Quantity</label><input id="detail-quantity" type="number" min="1" max="99" value="1" data-testid="product-quantity"></div><button class="button" type="button" data-testid="add-to-cart">Add to cart</button><p class="notice" data-testid="add-message" aria-live="polite"></p></div></div>
+    </section>
+    <section class="view" data-view="cart" data-testid="cart-page">
+      <p class="eyebrow">Your selection</p><h1>Your cart</h1>
+      <div class="empty" data-testid="empty-cart" hidden><h2>Your cart is empty.</h2><a class="text-link" href="./">Return to the catalog</a></div>
+      <div data-testid="cart-content">
+        <table class="cart-table"><thead><tr><th>Product</th><th>Price</th><th>Quantity</th><th>Subtotal</th><th></th></tr></thead><tbody data-testid="cart-items"></tbody></table>
+        <div class="cart-footer"><form class="coupon" data-testid="coupon-form"><div style="flex:1"><label for="coupon-code">Coupon code</label><input id="coupon-code" data-testid="coupon-input" autocomplete="off"><p class="notice" data-testid="coupon-message" aria-live="polite"></p></div><button class="button secondary" type="submit" data-testid="apply-coupon">Apply</button></form>
+          <div class="totals"><div class="total-row"><span>Subtotal</span><strong data-testid="cart-subtotal">$0.00</strong></div><div class="total-row"><span>Shipping</span><strong data-testid="shipping-total">$0.00</strong></div><div class="total-row final"><span>Total</span><strong data-testid="cart-total">$0.00</strong></div><a class="button" style="display:block;text-align:center;text-decoration:none" href="?page=checkout" data-testid="checkout-link">Continue to checkout</a></div>
+        </div>
+      </div>
+    </section>
+    <section class="view" data-view="checkout" data-testid="checkout-page">
+      <p class="eyebrow">Delivery details</p><h1>Simulated checkout</h1><p class="lead" style="margin-bottom:24px">No payment details are collected and no payment is processed.</p>
+      <div class="checkout-layout"><form data-testid="checkout-form" novalidate>
+        <div class="field"><label for="full-name">Full name</label><input id="full-name" name="full_name" data-testid="full-name"><p class="field-error" data-error-for="full_name"></p></div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" data-testid="email"><p class="field-error" data-error-for="email"></p></div>
+        <div class="field"><label for="address">Address</label><input id="address" name="address" data-testid="address"><p class="field-error" data-error-for="address"></p></div>
+        <div class="field"><label for="city">City</label><input id="city" name="city" data-testid="city"><p class="field-error" data-error-for="city"></p></div>
+        <div class="field"><label for="postal-code">Postal code</label><input id="postal-code" name="postal_code" data-testid="postal-code"><p class="field-error" data-error-for="postal_code"></p></div>
+        <button class="button" type="submit" data-testid="place-order">Place simulated order</button><p class="notice" data-testid="checkout-message" aria-live="polite"></p>
+      </form><aside class="checkout-summary"><h2>Order summary</h2><p><span data-testid="checkout-item-count">0</span> item(s)</p><div class="total-row final"><span>Total</span><strong data-testid="checkout-total">$0.00</strong></div></aside></div>
+    </section>
+    <section class="view" data-view="confirmation" data-testid="confirmation-page">
+      <div class="confirmation"><p class="eyebrow">Order complete</p><h1>Thank you for your simulated order.</h1><p>Your practice order is recorded in this browser session only.</p><p>Order reference: <strong data-testid="order-reference"></strong></p><p>Order total: <strong data-testid="order-total"></strong></p><a class="button" style="display:inline-block;text-decoration:none" href="./">Return to shop</a></div>
+    </section>
+  </main>
+  <footer>ShopSphere Local Mock Application · Synthetic data only · No real payment processing</footer>
+  <script>
+    (() => {
+      const products = [
+        { id: "canvas-tote", name: "Canvas Market Tote", description: "Reusable cotton canvas tote with reinforced handles.", price: 29.99, search: "tote canvas market reusable cotton" },
+        { id: "steel-bottle", name: "Insulated Steel Bottle", description: "Double-wall reusable bottle in a 600 ml size.", price: 59.50, search: "bottle steel insulated reusable" },
+        { id: "notebook-set", name: "Recycled Notebook Set", description: "Three-pack of recycled paper notebooks.", price: 14.25, search: "notebook recycled paper set" }
+      ];
+      const money = (amount) => `$${amount.toFixed(2)}`;
+      const readCart = () => JSON.parse(localStorage.getItem("shopsphere-cart") || "[]");
+      const writeCart = (cart) => localStorage.setItem("shopsphere-cart", JSON.stringify(cart));
+      const productById = (id) => products.find((product) => product.id === id);
+      const query = new URLSearchParams(location.search);
+      const requestedView = query.get("page") || (query.has("product") ? "product" : "shop");
+      const view = ["shop", "product", "cart", "checkout", "confirmation"].includes(requestedView) ? requestedView : "shop";
+      document.querySelector(`[data-view="${view}"]`).classList.add("active");
+
+      function updateBadge() {
+        document.querySelector('[data-testid="cart-badge"]').textContent = String(readCart().reduce((sum, item) => sum + item.quantity, 0));
+      }
+      function renderProducts(term = "") {
+        const normalized = term.trim().toLowerCase();
+        const matches = products.filter((product) => `${product.name} ${product.description} ${product.search}`.toLowerCase().includes(normalized));
+        const results = document.querySelector('[data-testid="product-results"]');
+        results.innerHTML = matches.map((product, index) => `<article class="product-card" data-testid="product-card" data-product-id="${product.id}"><div class="product-art" style="--art-bg:${["#dfe8d6", "#dce4e5", "#eee2d2"][index % 3]}"><span>${product.name.split(" ").slice(0, 2).join(" ")}</span></div><div class="product-copy"><h2><a class="text-link" data-testid="product-link" href="?product=${product.id}">${product.name}</a></h2><p>${product.description}</p><div class="product-meta"><span class="price" data-testid="product-card-price">${money(product.price)}</span><a class="text-link" href="?product=${product.id}">View details</a></div></div></article>`).join("");
+        document.querySelector('[data-testid="no-results"]').hidden = matches.length > 0;
+        document.querySelector('[data-testid="results-label"]').textContent = normalized ? `SEARCH RESULTS (${matches.length})` : "THE CATALOG";
+      }
+      function renderProduct() {
+        const product = productById(query.get("product"));
+        if (!product) { location.replace("./"); return; }
+        document.querySelector('[data-testid="product-title"]').textContent = product.name;
+        document.querySelector('[data-testid="product-description"]').textContent = product.description;
+        document.querySelector('[data-testid="product-price"]').textContent = money(product.price);
+        document.querySelector('[data-testid="detail-art-label"]').textContent = product.name.split(" ").slice(0, 2).join(" ");
+        document.querySelector('[data-testid="add-to-cart"]').dataset.productId = product.id;
+      }
+      function renderCart() {
+        const cart = readCart();
+        const empty = cart.length === 0;
+        document.querySelector('[data-testid="empty-cart"]').hidden = !empty;
+        document.querySelector('[data-testid="cart-content"]').hidden = empty;
+        const items = document.querySelector('[data-testid="cart-items"]');
+        items.innerHTML = cart.map((item) => {
+          const product = productById(item.id);
+          return `<tr data-testid="cart-row" data-product-id="${product.id}"><td>${product.name}</td><td>${money(product.price)}</td><td><input type="number" min="1" max="99" value="${item.quantity}" aria-label="Quantity for ${product.name}" data-testid="cart-quantity"></td><td data-testid="line-subtotal">${money(product.price * item.quantity)}</td><td><button class="button danger" type="button" data-testid="remove-item" data-product-id="${product.id}">Remove</button></td></tr>`;
+        }).join("");
+        const subtotal = cart.reduce((sum, item) => sum + productById(item.id).price * item.quantity, 0);
+        document.querySelector('[data-testid="cart-subtotal"]').textContent = money(subtotal);
+        document.querySelector('[data-testid="shipping-total"]').textContent = money(0);
+        document.querySelector('[data-testid="cart-total"]').textContent = money(subtotal);
+        updateBadge();
+      }
+      function renderCheckout() {
+        const cart = readCart();
+        if (!cart.length) { location.replace("?page=cart"); return; }
+        document.querySelector('[data-testid="checkout-item-count"]').textContent = String(cart.reduce((sum, item) => sum + item.quantity, 0));
+        document.querySelector('[data-testid="checkout-total"]').textContent = money(cart.reduce((sum, item) => sum + productById(item.id).price * item.quantity, 0));
+      }
+      if (view === "shop") renderProducts();
+      if (view === "product") renderProduct();
+      if (view === "cart") renderCart();
+      if (view === "checkout") renderCheckout();
+      if (view === "confirmation") {
+        const order = JSON.parse(sessionStorage.getItem("shopsphere-order") || "{}");
+        document.querySelector('[data-testid="order-reference"]').textContent = order.reference || "";
+        document.querySelector('[data-testid="order-total"]').textContent = order.total || "";
+      }
+      updateBadge();
+
+      document.querySelector('[data-testid="search-form"]').addEventListener("submit", (event) => {
+        event.preventDefault(); renderProducts(document.querySelector('[data-testid="search-input"]').value);
+      });
+      document.querySelector('[data-testid="add-to-cart"]').addEventListener("click", (event) => {
+        const id = event.currentTarget.dataset.productId;
+        const quantity = Number(document.querySelector('[data-testid="product-quantity"]').value);
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
+        const cart = readCart();
+        const item = cart.find((entry) => entry.id === id);
+        if (item) item.quantity += quantity; else cart.push({ id, quantity });
+        writeCart(cart); updateBadge();
+        document.querySelector('[data-testid="add-message"]').textContent = "Added to cart.";
+      });
+      document.querySelector('[data-testid="cart-items"]').addEventListener("change", (event) => {
+        if (!event.target.matches('[data-testid="cart-quantity"]')) return;
+        const row = event.target.closest("[data-product-id]");
+        const quantity = Number(event.target.value);
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) { renderCart(); return; }
+        const cart = readCart().map((item) => item.id === row.dataset.productId ? { ...item, quantity } : item);
+        writeCart(cart); renderCart();
+      });
+      document.querySelector('[data-testid="cart-items"]').addEventListener("click", (event) => {
+        if (!event.target.matches('[data-testid="remove-item"]')) return;
+        writeCart(readCart().filter((item) => item.id !== event.target.dataset.productId)); renderCart();
+      });
+      document.querySelector('[data-testid="coupon-form"]').addEventListener("submit", (event) => {
+        event.preventDefault();
+        document.querySelector('[data-testid="coupon-message"]').textContent = "Coupon code is not valid.";
+      });
+      document.querySelector('[data-testid="checkout-form"]').addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const values = Object.fromEntries(new FormData(form).entries());
+        const errors = {};
+        for (const field of ["full_name", "email", "address", "city", "postal_code"]) {
+          if (!String(values[field] || "").trim()) errors[field] = "This field is required.";
+        }
+        if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = "Enter a valid email address.";
+        document.querySelectorAll("[data-error-for]").forEach((element) => { element.textContent = errors[element.dataset.errorFor] || ""; });
+        if (Object.keys(errors).length) {
+          document.querySelector('[data-testid="checkout-message"]').textContent = "Please correct the highlighted fields.";
+          return;
+        }
+        const total = readCart().reduce((sum, item) => sum + productById(item.id).price * item.quantity, 0);
+        sessionStorage.setItem("shopsphere-order", JSON.stringify({ reference: "SS-MOCK-0001", total: money(total) }));
+        writeCart([]);
+        location.href = "?page=confirmation";
+      });
+    })();
+  </script>
+</body>
+</html>
